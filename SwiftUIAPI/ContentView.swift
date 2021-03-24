@@ -9,46 +9,57 @@ import SwiftUI
 
 struct ContentView: View {
     //1.
-      @ObservedObject var networkManager = NetworkManager()
+    @ObservedObject var networkManager = NetworkManager()
+    @State private var showAlert = false
 
-       
-       var body: some View {
-     
-           NavigationView {
-          
-               //3.
+    var body: some View {
+        NavigationView {
+            //3
             List {
-                NavigationLink(destination:CreateView()){
-                    Button(action: /*@START_MENU_TOKEN@*/{}/*@END_MENU_TOKEN@*/, label: {
-                        Text("Create New")
-                    })
-                }
-             
                 ForEach(networkManager.people, id:\.id){ person in
-                  
+                    
+                    NavigationLink(destination:UpdateView(firstName: person.first_name, lastName: person.last_name, age: person.age, activeDate: person.active_date,id:person.id!)){
                         VStack{
                             Text(person.first_name).fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
                             Text(person.last_name).font(.caption)
+                            
                         }
+                    }.alert(isPresented: $showAlert, content: { self.alert })
+                    //4
+                }
+                
+                .onDelete(perform: {
                     
-                }.onDelete(perform: { indexSet in
+                    indexSet in
+                    
                     indexSet.forEach{
                         (index) in
                         networkManager.deletePeople(id: index)
                     }
-                })
-            }
-            
+                }
+                )
+            }.listStyle(InsetGroupedListStyle())
             .navigationTitle("List People")
-         
-               //2.
-             
-           }
-           .onAppear() {
-            self.networkManager.performRequest()
-
-           }
+            .toolbar{
+                ToolbarItem(placement: .navigationBarTrailing)
+                {
+                    NavigationLink(destination:CreateView()){
+                        Button(action: {}, label: {
+                            Text("Create")
+                        })
+                    }
+                }
+            }
+            //5
+            .onAppear() {
+                self.networkManager.performRequest()
+                
+            }
+        }
         
+    }
+    var alert: Alert {
+           Alert(title: Text("Message"), message: Text("Record Deleted"), dismissButton: .default(Text("Close")))
        }
 }
 
