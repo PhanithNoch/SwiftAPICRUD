@@ -14,7 +14,9 @@ class NetworkManager:ObservableObject {
     
     let urlString = "https://peopleinfoapi.herokuapp.com/api/people"
     @Published var people = [People]()
-
+    @Published var isDeleted = false
+    @Published var isCreated = false
+    @Published var isUpdated = false
     func performRequest()  {
         if let url = URL(string: urlString){
             let session = URLSession(configuration: .default)
@@ -25,7 +27,7 @@ class NetworkManager:ObservableObject {
                     print(error!)
                 }
                 if let safeData = data {
-                    //                    let dataString = String(data:safeData,encoding: .utf8)
+                    //let dataString = String(data:safeData,encoding: .utf8)
                     self.parseJSON(peopleModel: safeData)
                     //                    print(dataString!)
                 }
@@ -73,6 +75,7 @@ class NetworkManager:ObservableObject {
                         (person)-> Bool in
                         return person.id == id
                     }
+                    self.isDeleted = true
                     self.performRequest()
                 }
                 
@@ -103,16 +106,21 @@ class NetworkManager:ObservableObject {
         
         
         let session = URLSession(configuration: .default)
-        session.dataTask(with: request){(data,_,err) in
+        session.dataTask(with: request){(data,res,err) in
             if err != nil {
                 print(err!.localizedDescription)
                 return
             }
-            guard let response = data else {return}
-            let status = String(data:response,encoding: .utf8) ?? ""
-            
-            print(status)
-            
+            guard let _ = data else {return}
+            if err == nil,let response = res as? HTTPURLResponse {
+                if response.statusCode == 201
+                {
+                    DispatchQueue.main.async {
+                        self.isCreated = true
+                    }
+                }
+            }
+         
         }.resume()
         
     }
@@ -137,10 +145,18 @@ class NetworkManager:ObservableObject {
         request.httpBody =  jsonData
         
         let session = URLSession(configuration: .default)
-        session.dataTask(with: request){(data,_,err) in
+        session.dataTask(with: request){(data,res,err) in
             if err != nil {
                 print(err!.localizedDescription)
                 return
+            }
+            if err == nil,let response = res as? HTTPURLResponse {
+                if response.statusCode == 200
+                {
+                    DispatchQueue.main.async {
+                        self.isUpdated = true
+                    }
+                }
             }
             guard let response = data else {return}
             let status = String(data:response,encoding: .utf8) ?? ""

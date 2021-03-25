@@ -14,28 +14,44 @@ struct CreateView: View {
     @State var lastName:String = ""
     @State var age:String = ""
     @State var activeDate = "2021-03-11 14:19:20"
+    
+    init() {
+      
+    }
     var body: some View {
-        VStack(alignment:.leading,spacing:20){
-            TextField("FirstName",text:$firstName)
-            TextField("LastName",text:$lastName)
-            TextField("Age",text:$age)
-            TextField("ActiveDate",text:$activeDate)
-            
-            Button(action: {
-                let person: People = People(id: nil, first_name: self.firstName, last_name: lastName, age: age, active_date: activeDate, created_at: "", updated_at: "")
-             
-                networkManager.createNew(person: person)
-               
-            }, label: {
-                Text("Save")
-            })
-            Spacer()
-        }
-        .navigationBarTitle("Create").padding(.all,30)
+        
+        LinearGradient(gradient: Gradient(colors: [Color.red, Color.purple]), startPoint: .top, endPoint: .bottom)
+                 .edgesIgnoringSafeArea(.vertical)
+                 .overlay(
+                    VStack(alignment:.leading,spacing:20){
+                        
+                        TextField("FirstName",text:$firstName)  .textFieldStyle(RoundedBorderTextFieldStyle())
+                        TextField("LastName",text:$lastName)  .textFieldStyle(RoundedBorderTextFieldStyle())
+                        TextField("Age",text:$age)  .textFieldStyle(RoundedBorderTextFieldStyle())
+                        TextField("ActiveDate",text:$activeDate)  .textFieldStyle(RoundedBorderTextFieldStyle())
+                        
+                        Button(action: {
+                            let person: People = People(id: nil, first_name: self.firstName, last_name: lastName, age: age, active_date: activeDate, created_at: "", updated_at: "")
+                         
+                         networkManager.createNew(person: person)
+                            
+                           
+                        }, label: {
+                            Text("Save").bold()
+                        }).alert(isPresented: $networkManager.isCreated, content: { self.alert })
+                        Spacer()
+                    }
+                    .navigationBarTitle("Create New User", displayMode: .inline).foregroundColor(.white).padding()
+
+                  
+             )
+     
     }
     
 
-   
+    var alert: Alert {
+           Alert(title: Text("Message"), message: Text("Record Created"), dismissButton: .default(Text("Close")))
+       }
 }
 
 struct CreateView_Previews: PreviewProvider {
